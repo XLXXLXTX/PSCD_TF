@@ -1,8 +1,7 @@
 //*****************************************************************
 // File:   Tupla.cpp
-// Author: PSCD-Unizar
-// Date:   noviembre 2020
-// Coms:
+// Author: Equipo 16
+// Date:   enero 2020
 //*****************************************************************
 
 #include <vector>
@@ -61,7 +60,10 @@ Tupla::Tupla(string s1, string s2, string s3, string s4, string s5, string s6) {
 }
 
 Tupla::Tupla(Tupla t) {
-    //To be done
+    data = new vector<string>(t.size(),"");
+    for (int i = 0; i < t.size(); i++) {
+        data->at(i) = t.data->at(i);
+    }
 }
 
 Tupla::~Tupla() {
@@ -91,9 +93,20 @@ void Tupla::set(int pos, string value) {
 
 void Tupla::from_string(string s) {
     assert(s.length()>2 && s[0]=='[' && s[s.size()-1]==']');
-    //To be done
+    string formato = "[%s";
+    for (int i = 1; i < s.) {
+        formato = formato + ""
+    }
+    formato = formato + "]";
+    sscanf(s.str(), "[%s,%s]",  )
 }
 
 bool match(Tupla p) {
-    //To be done
+    bool iguales = (data.size()==p.size());
+    int i = 0;
+    while (iguales) {
+        iguales = ((p.data->at(i)).substr(0) == "?") || (p.data->at(i) == data->at(i));
+        i++;
+    } // NO TIENE EN CUENTA LAS VARIABLES SI SE REPITEN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    return iguales;
 }
