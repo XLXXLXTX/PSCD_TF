@@ -9,7 +9,6 @@
 using namespace std;
 
 int main() {
-    
     //Pruebas de pasar un String a Tupla sabiendo el tamanio.
     //----------------------------------------------------------------------
     string test = "[aumento,de,sueldo,carlos,carlos,carlos]";
