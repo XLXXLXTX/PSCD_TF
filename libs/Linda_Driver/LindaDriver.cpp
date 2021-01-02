@@ -17,7 +17,7 @@
 using namespace std;
 
 //constructores -----------------------------
-LindaDriver::LindaDriver(string SERVER_ADDRESS, string SERVER_PORT) : Socket(SERVER_ADDRESS, stoi(SERVER_ADDRESS)){
+LindaDriver::LindaDriver(string SERVER_ADDRESS, string SERVER_PORT) : Socket(SERVER_ADDRESS, stoi(SERVER_PORT)){
 
     // Conectamos con el servidor. Probamos varias conexiones
     const int MAX_ATTEMPS = 10;
@@ -40,15 +40,22 @@ LindaDriver::LindaDriver(string SERVER_ADDRESS, string SERVER_PORT) : Socket(SER
 }
 
 //destructor -----------------------------
-LindaDriver::~LindaDriver()//Hacer destructor
-{
+LindaDriver::~LindaDriver() {
+    string MENS_FIN="END OF SERVICE";
+
+    int send_bytes = Send(socket_fd, MENS_FIN);	// Envíamos el string
+    if(send_bytes == -1){
+        cerr << "Error PN send_bytes: " << strerror(errno) << endl;
+        // Cerramos el socket
+        Close(socket_fd);
+        exit(1);
+    }
     Close(socket_fd);
-    exit(1);
 }
 
 //operadores -----------------------------
 void LindaDriver::PN(Tupla t){
-    string mensaje = "PN: " + t.to_string();	    // Adaptamos la tupla a string
+    string mensaje = "PN:" + t.to_string() + ":";	    // Adaptamos la tupla a string
     int send_bytes = Send(socket_fd, mensaje);	// Envíamos el string
     
     if(send_bytes == -1){
@@ -58,9 +65,18 @@ void LindaDriver::PN(Tupla t){
         exit(1);
     }
 
+    string respuesta;
+    int read_bytes = Recv(socket_fd, respuesta, MESSAGE_SIZE);
+
+    if(read_bytes == -1) {
+        cerr << "Error PN read_bytes: " << strerror(errno) << endl;
+        // Cerramos los sockets
+        Close(socket_fd);
+    }
+
 }
 void LindaDriver::RN(Tupla p, Tupla& t){
-    string mensaje = "RN: " + p.to_string();	    // Adaptamos la tupla a string
+    string mensaje = "RN:" + p.to_string() + ":";	    // Adaptamos la tupla a string
     int send_bytes = Send(socket_fd, mensaje);	// Envíamos el string
 
     if(send_bytes == -1) {
@@ -83,35 +99,32 @@ void LindaDriver::RN(Tupla p, Tupla& t){
 
 }
 void LindaDriver::RN_2(Tupla p1, Tupla p2, Tupla& t1, Tupla& t2){
-    string mensaje = "RN_2: " + p1.to_string();	        // Adaptamos la primera tupla
-    int send_bytes1 = Send(socket_fd, mensaje);	// Envíamos el string
-
-    mensaje = "RN_2: " + p2.to_string();	        // Adaptamos la segunda tupla
-    int send_bytes2 = Send(socket_fd, mensaje);	// Envíamos el string
+    string mensaje = "RN_2:" + p1.to_string() + ":" + p2.to_string() + ":";	        // Adaptamos las tupla
+    int send_bytes = Send(socket_fd, mensaje);	// Envíamos el string
     
-    if((send_bytes1 == -1) || (send_bytes2 == -1)) {
+    if(send_bytes == -1) {
         cerr << "Error RN_2 send_bytes: " << strerror(errno) << endl;
         // Cerramos el socket
         Close(socket_fd);
         exit(1);
     }
 
-    string respuesta1, respuesta2;
-    int read_bytes1 = Recv(socket_fd, respuesta1, MESSAGE_SIZE);
-    int read_bytes2 = Recv(socket_fd, respuesta2, MESSAGE_SIZE);
+	char respuesta[MESSAGE_SIZE];
+    int read_bytes = Recv(socket_fd, respuesta, MESSAGE_SIZE);
     
-    if((read_bytes1 == -1) || (read_bytes2 == -1)) {
+    if(read_bytes == -1) {
         cerr << "Error RN_2 read_bytes: " << strerror(errno) << endl;
         // Cerramos los sockets
         Close(socket_fd);
     }
-    
-    t1.from_string(respuesta1);					// Damos valor a t1
-    t2.from_string(respuesta2);					// Damos valor a t2
+    char* tupla = strtok (respuesta,":");
+    t1.from_string(tupla);			// Damos valor a t1
+    tupla = strtok (NULL,":");
+    t2.from_string(tupla);		// Damos valor a t2
 }
 
 void LindaDriver::RDN(Tupla p, Tupla& t){
-    string mensaje = "RDN: " + p.to_string();	    // Adaptamos la tupla a string
+    string mensaje = "RDN:" + p.to_string() + ":";	    // Adaptamos la tupla a string
     int send_bytes = Send(socket_fd, mensaje);	// Envíamos el string
     
     if(send_bytes == -1) {
@@ -133,27 +146,26 @@ void LindaDriver::RDN(Tupla p, Tupla& t){
 }
 
 void LindaDriver::RDN_2(Tupla p1, Tupla p2, Tupla& t1, Tupla& t2){
-    string mensaje = "RN_2: " + p1.to_string();                     //Pasamos la primera tupla a string
-    int send_bytes1 = Send(socket_fd, mensaje);	            // Envíamos el string
-    mensaje = "RN_2: " + p2.to_string();                            //Pasamos la segunda tupla a string
-    int send_bytes2 = Send(socket_fd, mensaje);	            // Envíamos el string
+    string mensaje = "RDN_2:" + p1.to_string() + ":" + p2.to_string() + ":";	        // Adaptamos las tupla
+    int send_bytes = Send(socket_fd, mensaje);	// Envíamos el string
     
-    if(send_bytes1 == -1 || send_bytes2 == -1) {
+    if(send_bytes == -1) {
         cerr << "Error RDN_2 send_bytes: " << strerror(errno) << endl;
         // Cerramos el socket
         Close(socket_fd);
         exit(1);
     }
-
-    string respuesta1, respuesta2;
-    int read_bytes1 = Recv(socket_fd, respuesta1, MESSAGE_SIZE);
-    int read_bytes2 = Recv(socket_fd, respuesta2, MESSAGE_SIZE);
     
-    if((read_bytes1 == -1) || (read_bytes2 == -1)) {
+	char respuesta[MESSAGE_SIZE];
+    int read_bytes = Recv(socket_fd, respuesta, MESSAGE_SIZE);
+    
+    if(read_bytes == -1) {
         cerr << "Error RDN_2 read_bytes: " << strerror(errno) << endl;
         // Cerramos los sockets
         Close(socket_fd);
     }
-    t1.from_string(respuesta1);					// Damos valor a t1
-    t2.from_string(respuesta2);					// Damos valor a t2
+    char* tupla = strtok (respuesta,":");
+    t1.from_string(tupla);			// Damos valor a t1
+    tupla = strtok (NULL,":");
+    t2.from_string(tupla);		// Damos valor a t2
 }
