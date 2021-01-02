@@ -10,13 +10,19 @@
 #include <iostream>
 #include <string>
 #include "Tupla.hpp"
+#include "Socket/Socket.hpp"
 
 using namespace std;
 
-class LindaDriver {
+const int MESSAGE_SIZE = 4001; //mensajes de no más 4000 caracteres
+
+class LindaDriver : public Socket{
+private:
+	string SERVER_ADDRESS;	//dirección ip
+    int socket_fd; //socket de conexión
 public:
 	//constructores -----------------------------
-	LindaDriver(...);
+	LindaDriver(string SERVER_ADDRESS, string SERVER_PORT);
 	//destructor -----------------------------
 	~LindaDriver();
 	//operadores -----------------------------
@@ -28,24 +34,19 @@ public:
 	//Post: Remove Note, siendo "p" el patrón y "t" la tupla
 	void RN(Tupla p, Tupla& t);
 
-	//Pre:  "p1", "p2", "t1" y "t2" tienen el mismo tamaño
+	//Pre:  "p1" y "t1" tienen el mismo tamaño
+	//      "p2" y "t2" tienen el mismo tamaño
 	//Post: Remove Notes, siendo "p1" y "p2" los patrones y "t1" y "t2" las tuplas
-	//      Se bloquea hasta poder retirar dos tuplas del espacio,
-	//      emparejando "t1" con "p1" y "t2" con "p2"
-	void RN_2(Tupla p1, Tupla p2, Tupla& t1, Tupla& t2);
+	void RN_2(Tupla p1, const Tupla p2, Tupla& t1, Tupla& t2);
 
 	//Pre:  "p" y "t" tienen el mismo tamaño
 	//Post: ReaD Note, siendo "p" el patrón y "t" la tupla
 	void RDN(Tupla p, Tupla& t);
 
-	//Pre:  "p1", "p2", "t1" y "t2" tienen el mismo tamaño
-	//Post: ReaD Notes, siendo "p1" y "p2" los patrones y "t1" y "t2" las tuplas,
-	//      Se bloquea hasta poder leer dos tuplas del espacio,
-	//      emparejando "t1" con "p1" y "t2" con "p2"
+	//Pre:  "p1" y "t1" tienen el mismo tamaño
+	//      "p2" y "t2" tienen el mismo tamaño
+	//Post: ReaD Notes, siendo "p1" y "p2" los patrones y "t1" y "t2" las tuplas
 	void RDN_2(Tupla p1, Tupla p2, Tupla& t1, Tupla& t2);
 
-	//...
-private:
-	//...
 };
 #endif
