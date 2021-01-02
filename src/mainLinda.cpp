@@ -6,9 +6,6 @@
 //         invocar mediante
 //            mainLindaDriver IP_LindaRegisterServer Port_LindaRegisterServer ...
 //*****************************************************************
-
-...
-
 #include "LindaDriver.hpp"
 #include "Tupla.hpp"
 
@@ -18,7 +15,7 @@ using namespace std;
 int main(int argc, char* argv[]) {
 
     //faltan argumentos en la invocación?
-    if (argc < ... ) {
+    if (argc < 4 ) {
         cerr << "Invocar como:" << endl
              << "   mainLindaDriver <IP_LS> <Port_LS> ..." << endl
              << "      <IP_LS>: IP del servidor Linda" << endl
@@ -45,28 +42,27 @@ int main(int argc, char* argv[]) {
     LD.PN(t4);
 
     //muestra "mi casa" por stdout
-    cout << t1.get(2) << endl;
+    cout << t1.get(1) << endl;
     // t3.to_string() devuelve el string "[aprieta,el,pan,45,34,88]"
     string serial = t3.to_string();
     cout << serial << endl;
     // las componentes de t3 tomarán, respectivamente,
     // los valores "a","b","c","45","34","pan"
     t3.from_string("[a,b,c,45,34,pan]");
+    LD.PN(t3);
     // mostrará [a,b,c,45,34,pan] por stdout
     cout << t3.to_string() << endl;
-    ...
 
     // Crea una tupla de 3 elementos "".
     // Equivalente a Tupla t5("","","")
     Tupla t5(3);
-    t5.set(2, "hola");
-    t5.set(3, "Mundo");
+    t5.set(1, "hola");
+    t5.set(2, "Mundo");
     LD.PN(t5);
     // mostrará [,hola,Mundo] por stdout
     cout << t5.to_string() << endl;
     // informará de que tiene 3 elementos
     cout << "t5 tiene " << t5.size() << " elementos" << endl;
-    ...
 
     // Un patrón no es otra cosa que una tupla con
     // la posibilidad de contener el comodín "?" en una o más posiciones
@@ -82,14 +78,12 @@ int main(int argc, char* argv[]) {
     LD.RN(p2, res2); // res2 tomará el valor que tenía t3
     cout << res1.to_string() << endl; //mostrará [1000]
     cout << res2.to_string() << endl; //mostrará [a,b,c,45,34,pan]
-    ...
 
     // ¿Si necesitamos un array de tuplas?
     // Tupla v[2]; // NO permitido: no hay constructor por defecto
     Tupla* v[2];
     v[0] = new Tupla("Juan", "1000");
     v[1] = new Tupla("Luisa", "1000", "enero");
-    ...
     delete v[0];
     delete v[1];
 
@@ -106,5 +100,7 @@ int main(int argc, char* argv[]) {
     // t9 con ["EINA","PSCD","DIIS"], o viceversa
     cout << t8.to_string() << endl;
     cout << t9.to_string() << endl;
+    LD.PN(t1);
+    return 0;
 }
 
