@@ -18,8 +18,8 @@
 #include <cstdlib>
 #include <string>
 
-#include "LindaDriver.hpp"
-#include "Tuplas.hpp"
+#include "../librerias/LindaDriver/LindaDriver.hpp"
+#include "../librerias/Tupla/Tupla.hpp"
 
 using namespace std;
 //-----------------------------------------------------
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     }
     int NT = atoi(argv[1]); //num de tuplas a tratar
     // un driver con los datos pasados en la invocación
-    LindaDriver LD(argv[2], argv[3], ...);
+    LindaDriver LD(argv[2], argv[3]);
     // La conexión con los servidores Linda ya está establecida
     //-----------------------------------------------------
     //Creamos 6 tuplas, de tamaño 1 hasta 6, para ir rellenando y

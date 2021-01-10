@@ -6,8 +6,8 @@
 //         invocar mediante
 //            mainLindaDriver IP_LindaRegisterServer Port_LindaRegisterServer ...
 //*****************************************************************
-#include "LindaDriver.hpp"
-#include "Tupla.hpp"
+#include "../librerias/LindaDriver/LindaDriver.hpp"
+#include "../librerias/Tupla/Tupla.hpp"
 
 using namespace std;
 
