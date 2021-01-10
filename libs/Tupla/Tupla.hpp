@@ -1,10 +1,9 @@
-//*****************************************************************
+//********************************************************************************************
 // File:   Tupla.hpp
-// Author: PSCD-Unizar
-// Date:   noviembre 2020
-// Coms:   
-//*****************************************************************
-
+// Author: Pablo Bueno, Santiago Illa, Luis Palazón, Carlos Paesa, Javier Pardos y Héctor Toral
+// Date:   enero 2021
+// Coms:   Fichero de interfaz de las operaciones con la clase Tupla
+//********************************************************************************************
 #ifndef TUPLA
 #define TUPLA
 

@@ -1,9 +1,9 @@
-//*****************************************************************
+//********************************************************************************************
 // File:   Tupla.cpp
-// Author: PSCD-Unizar
-// Date:   noviembre 2020
-// Coms:
-//*****************************************************************
+// Author: Pablo Bueno, Santiago Illa, Luis Palazón, Carlos Paesa, Javier Pardos y Héctor Toral
+// Date:   enero 2021
+// Coms:   Fichero de implementación de las operaciones con la clase Tupla
+//********************************************************************************************
 #include "Tupla.hpp"
 
 Tupla::Tupla(int n) {
@@ -59,10 +59,9 @@ Tupla::Tupla(string s1, string s2, string s3, string s4, string s5, string s6) {
 Tupla::Tupla(const Tupla& t) {
     data = new vector<string>(t.data->size(),"");
     
-    for (int pos = 0; pos < t.data->size(); pos++) {
+    for (unsigned int pos = 0; pos < t.data->size(); pos++) {
         data->at(pos) = t.data->at(pos);
     }
-    
 }
 
 Tupla::~Tupla(){
@@ -82,7 +81,7 @@ int Tupla::size() {
 // Com:  Ver ejemplos en mainLindaDriver.cpp
 string Tupla::to_string() {
     string res = "[";
-    for (int i = 0; i < data->size() - 1; i++) {
+    for (unsigned int i = 0; i < data->size() - 1; i++) {
         res = res + data->at(i) + ",";
     }
     res = res + data->at(data->size() - 1) + "]";
@@ -98,7 +97,7 @@ void Tupla::from_string(string s) {
     int pos = 0;
     string value = "";
 
-    for (string::iterator it = s.begin() + 1; it != s.end(); ++it) {
+    for (string::iterator it = s.begin() + 1; it != s.end() && pos < size(); ++it) {
         if (*it != LIM_SEPARATOR && *it != LIM_END) { 
             value += *it;
         } else {
