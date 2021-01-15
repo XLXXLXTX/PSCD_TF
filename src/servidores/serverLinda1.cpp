@@ -5,6 +5,7 @@
 // Coms:   Fichero de implementación del primero de los servidores que integran el sistema Linda
 // 		   Contiene en su espacio de tuplas las de tamaño 1, 2 y 3
 //********************************************************************************************
+
 #include <iostream>
 #include <thread>
 #include <sstream>
@@ -12,8 +13,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "../../librerias/Socket/Socket.hpp"
-#include "../../librerias/MonitorLinda/MonitorLinda.hpp"
+#include "../librerias/Socket/Socket.hpp"
+#include "../librerias/MonitorLinda/MonitorLinda.hpp"
 
 using namespace std;
 
@@ -32,22 +33,24 @@ int largo(string cad) {
     return tamanyo;
 }
 
-// Permite gestionar mediante threads a clientes que deseen usar espacios de tuplas de tamaños 1-3 del servicio Linda
+// Pre:  
+// Post:
+// Coms: Permite gestionar mediante threads a clientes que deseen
+//		 usar espacios de tuplas de tamaños 1-3 del servicio Linda
 void servCliente(Socket& soc, int client_fd, MonitorLinda& ML1, MonitorLinda& ML2, MonitorLinda& ML3, bool& terminar);
 
-//-------------------------------------------------------------
 int main(int argc, char* argv[]) {
     if(argc < 2) {
-	    cerr << "Ejecutar como: serverLinda1 <PUERTO> \n";
+	    cerr << "Ejecutar como: serverLinda1 <PUERTO>\n";
 	    return 1;
 	}
 
 	// Dirección del servidor y tamaño de las tuplas
 	string SERVER_ADDRESS = "localhost";
-    int SERVER_PORT = atoi(argv[1]);
+    int	   SERVER_PORT 	  = atoi(argv[1]);
     int client_fd[MAX_CONNECT];
 
-	cout << "Iniciando servidor Linda nº1 en el puerto " << SERVER_PORT << endl;
+	cout << "Iniciando servidor Linda nº1 en el puerto " to_string(SERVER_PORT) + "\n";
 	// Socket para comunicación
 	Socket socket(SERVER_PORT);
 
@@ -77,7 +80,7 @@ int main(int argc, char* argv[]) {
 	thread cliente[MAX_CONNECT];	
 	int clientesActuales=0;
 	bool terminar = false;
-	while(clientesActuales<MAX_CONNECT && !terminar) {
+	while (clientesActuales < MAX_CONNECT && !terminar) {
 		// Accept
 		client_fd[clientesActuales] = socket.Accept();
 
@@ -89,16 +92,17 @@ int main(int argc, char* argv[]) {
 			exit(1);
 		}
 
-		cout << "Nuevo cliente en server2: " + to_string(clientesActuales) + "\n";
+		cout << "Nuevo cliente en server1: " + to_string(clientesActuales) + "\n";
 		// Thread para tratar al cliente
-        cliente[clientesActuales]=thread(&servCliente, ref(socket), client_fd[clientesActuales], ref(ML1), ref(ML2), ref(ML3), ref(terminar));
+        cliente[clientesActuales] = thread(&servCliente, ref(socket), client_fd[clientesActuales], ref(ML1), ref(ML2), ref(ML3), ref(terminar));
 		clientesActuales++;
 		usleep(1000);
 	}
 
 	for (int i = 0; i < clientesActuales; i++) {
 		cliente[i].join();
-	}	
+	}
+    cout << "Cerrando servidor Linda1\n";
     // Cerramos el socket del servidor
     error_code = socket.Close(socket_fd);
     if (error_code == -1) {
@@ -108,17 +112,16 @@ int main(int argc, char* argv[]) {
     return error_code;
 }
 
-//-------------------------------------------------------------
-// Permite gestionar mediante threads a clientes que deseen usar espacios de tuplas de tamaños 1-3 del servicio Linda
-void servCliente(Socket& soc, int client_fd, MonitorLinda& ML1, MonitorLinda& ML2, MonitorLinda& ML3, bool& terminar) {
+void servCliente(Socket& soc, int client_fd, MonitorLinda& ML1,
+				 MonitorLinda& ML2, MonitorLinda& ML3, bool& terminar) {
 	char MENS_FIN[]="END_OF_SERVICE";
 	char MENS_CIERRE[]="CLOSE_SERVER";
     char MENS_INFO[]="DATA_REQUIRED";
 	// Buffer para recibir el mensaje
 	int length = 100;
 	char buffer[length];
-	bool out = false; // Inicialmente no salir del bucle
-	while(!out) {
+	bool out = false;	// Inicialmente no salir del bucle
+	while (!out) {
 		// Recibimos el mensaje del cliente
 		int rcv_bytes = soc.Recv(client_fd,buffer,length);
 		if (rcv_bytes <= 0) {
@@ -131,10 +134,11 @@ void servCliente(Socket& soc, int client_fd, MonitorLinda& ML1, MonitorLinda& ML
 
 		// Si recibimos "END OF SERVICE" 
 		if (0 == strcmp(buffer, MENS_FIN)) {
-			out = true; // Salir del bucle
-		} else if(0 == strcmp(buffer, MENS_CIERRE)) { // Si recibimos "CLOSE_SERVER"
-			terminar=true;
-			out = true; // Salir del bucle
+			out = true;	// Salir del bucle
+		} else if (0 == strcmp(buffer, MENS_CIERRE)) {	// Si recibimos "CLOSE_SERVER"
+			terminar = true;
+    		cout << "Linda1 ya no acepta nuevos clientes\n";
+			out = true;	// Salir del bucle
 		} else {
 			string message;
 			if (0 == strcmp(buffer, MENS_INFO)) {
@@ -150,25 +154,19 @@ void servCliente(Socket& soc, int client_fd, MonitorLinda& ML1, MonitorLinda& ML
 				// Separa en <<operacion>> la operacion y 
 				// en <<tupla>> la (primera) tupla con la que trabajar
 				char* operation = strtok (buffer,":");
-				char* tupla = strtok (NULL, ":");
+				char* tupla 	= strtok (NULL, ":");
 				int size = largo(tupla);
 				Tupla t (size);
 				t.from_string(tupla);
 
 				// Determinación de la operación
-				if (strcmp(operation,"PN" )== 0){
+				if (strcmp(operation,"PN" ) == 0){
 					// La operacion es PostNote
 					// Ejecución de la operación del monitor
 					switch (size) {
-						case 1:
-							ML1.PN(t);
-							break;
-						case 2:
-							ML2.PN(t);
-							break;
-						case 3:
-							ML3.PN(t);
-							break;           
+						case 1: ML1.PN(t); break;
+						case 2:	ML2.PN(t); break;
+						case 3:	ML3.PN(t); break;           
 						default:
 							cerr << "Error: tamaño de tupla erroneo en server1" << endl;
 							soc.Close(client_fd);
@@ -176,20 +174,14 @@ void servCliente(Socket& soc, int client_fd, MonitorLinda& ML1, MonitorLinda& ML
 					}
 					message = "OK";
 				}
-				else if (strcmp(operation,"RDN" )== 0){
+				else if (strcmp(operation,"RDN" ) == 0){
 					// La operacion es ReadNote
 					Tupla r (size);
 					// Ejecución de la operación del monitor
 					switch (size) {
-						case 1:
-							ML1.RDN(t,r);
-							break;
-						case 2:
-							ML2.RDN(t,r);
-							break;
-						case 3:
-							ML3.RDN(t,r);
-							break;           
+						case 1:	ML1.RDN(t,r); break;
+						case 2:	ML2.RDN(t,r); break;
+						case 3:	ML3.RDN(t,r); break;           
 						default:
 							cerr << "Error: tamaño de tupla erroneo en server1" << endl;
 							soc.Close(client_fd);
@@ -203,15 +195,9 @@ void servCliente(Socket& soc, int client_fd, MonitorLinda& ML1, MonitorLinda& ML
 					Tupla r (size);
 					// Ejecución de la operación del monitor
 					switch (size) {
-						case 1:
-							ML1.RN(t,r);
-							break;
-						case 2:
-							ML2.RN(t,r);
-							break;
-						case 3:
-							ML3.RN(t,r);
-							break;           
+						case 1:	ML1.RN(t,r); break;
+						case 2:	ML2.RN(t,r); break;
+						case 3:	ML3.RN(t,r); break;           
 						default:
 							cerr << "Error: tamaño de tupla erroneo en server1" << endl;
 							soc.Close(client_fd);
@@ -229,15 +215,9 @@ void servCliente(Socket& soc, int client_fd, MonitorLinda& ML1, MonitorLinda& ML
 					Tupla r1(size), r2 (size);
 					// Ejecución de la operación del monitor
 					switch (size) {
-						case 1:
-							ML1.RDN_2(t,t2,r1,r2);
-							break;
-						case 2:
-							ML2.RDN_2(t,t2,r1,r2);
-							break;
-						case 3:
-							ML3.RDN_2(t,t2,r1,r2);
-							break;           
+						case 1: ML1.RDN_2(t,t2,r1,r2); break;
+						case 2: ML2.RDN_2(t,t2,r1,r2); break;
+						case 3: ML3.RDN_2(t,t2,r1,r2); break;           
 						default:
 							cerr << "Error: tamaño de tupla erroneo en server1" << endl;
 							soc.Close(client_fd);
@@ -256,28 +236,24 @@ void servCliente(Socket& soc, int client_fd, MonitorLinda& ML1, MonitorLinda& ML
 					Tupla r1(size), r2 (size);
 					// Ejecución de la operación del monitor
 					switch (size) {
-						case 1:
-							ML1.RDN_2(t,t2,r1,r2);
-							break;
-						case 2:
-							ML2.RDN_2(t,t2,r1,r2);
-							break;
-						case 3:
-							ML3.RDN_2(t,t2,r1,r2);
-							break;           
+						case 1: ML1.RN_2(t,t2,r1,r2); break;
+						case 2: ML2.RN_2(t,t2,r1,r2); break;
+						case 3: ML3.RN_2(t,t2,r1,r2); break;           
 						default:
 							cerr << "Error: tamaño de tupla erroneo en server1" << endl;
 							soc.Close(client_fd);
 							exit(1);
 					}
 					message = r1.to_string() + ":" + r2.to_string() + ":";
+				} else {
+					message = "UNKNOWN_PETITION";
 				}
 			}
 			// Si es Postnote se envia OK
 			// Si es ReadNote o RemoveNote normal o múltiple se envia(n) la(s) tupla(s) pedida(s)
 			// Si es INFO se envian los datos sobre el servidor
 			int send_bytes = soc.Send(client_fd, message);
-			if(send_bytes == -1) {
+			if (send_bytes == -1) {
 				string mensError(strerror(errno));
 				cerr << "Error: fallo al enviar mensaje en LindaServer1: " + mensError + "\n";
 				// Cerramos los sockets
@@ -287,7 +263,6 @@ void servCliente(Socket& soc, int client_fd, MonitorLinda& ML1, MonitorLinda& ML
 		}
 	}
 	// Cerramos cliente
-	cout << "Cliente desconectado del server1" << endl;
+	cout << "Cliente desconectado del server1\n";
 	soc.Close(client_fd);
 }
-//-------------------------------------------------------------

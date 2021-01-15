@@ -33,7 +33,6 @@ public:
 	// y el puerto de escucha del servidor. Para clientes.
 	Socket(string address, int port);
 
-
 	// Constructor de la clase indicando  el puerto de 
 	// escucha del servidor. Para servidores.
 	Socket(int port);
@@ -44,7 +43,7 @@ public:
 	// PRE:
 	// POST: Abre una nueva conexión con un cliente.
 	// Devuelve el descriptor de fichero del socket asociado
-	// al nuevo cliente en caso de exito.
+	// 		 al nuevo cliente en caso de exito.
 	// Devuelve -1 en caso de error.
 	int Accept();
 
@@ -52,7 +51,7 @@ public:
 	// PRE: 
 	// POST: Asocia la nueva conexión con el programa actual.
 	// Devuelve el descriptor de fichero del socket asociado
-	// a la conexión en caso de éxito. 
+	// 		 a la conexión en caso de éxito. 
 	// Devuelve -1 en caso de error.
 	int Bind();
 
@@ -69,9 +68,9 @@ public:
 	// PRE: 
 	// POST: La función conecta con el servidor utilizando
 	//       el socket especificado. 
-	// En caso de éxito el método devuelve el descriptor
-	// de fichero del socket 
-	// a utilizar para enviar y recibir mensages.
+	// 		 En caso de éxito el método devuelve el descriptor
+	// 		 de fichero del socket 
+	// 		 a utilizar para enviar y recibir mensages.
 	// Devuelve -1 en caso de error. 
 	int Connect();
 

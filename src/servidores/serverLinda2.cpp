@@ -5,6 +5,7 @@
 // Coms:   Fichero de implementación del segundo de los servidores que integran el sistema Linda
 // 		   Contiene en su espacio de tuplas las de tamaño 4 y 5
 //********************************************************************************************
+
 #include <iostream>
 #include <thread>
 #include <sstream>
@@ -12,8 +13,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "../../librerias/Socket/Socket.hpp"
-#include "../../librerias/MonitorLinda/MonitorLinda.hpp"
+#include "../librerias/Socket/Socket.hpp"
+#include "../librerias/MonitorLinda/MonitorLinda.hpp"
 
 using namespace std;
 
@@ -24,20 +25,21 @@ const int MAX_CONNECT = 100;
 int largo(string cad) {
     stringstream sstream(cad);
     int tamanyo = 1;
-    for(unsigned int i = 0; i < cad.size(); i++) {
-        if(sstream.get() == ',') {
+    for (unsigned int i = 0; i < cad.size(); i++) {
+        if (sstream.get() == ',') {
 			tamanyo++;
 		}
     }
     return tamanyo;
 }
 
-// Permite gestionar mediante threads a clientes que deseen usar espacios de tuplas de tamaños 4-5 del servicio Linda
+// Pre:
+// Post
+// Coms: Permite gestionar mediante threads a clientes que deseen usar espacios de tuplas de tamaños 4-5 del servicio Linda
 void servCliente(Socket& soc, int client_fd, MonitorLinda& ML4, MonitorLinda& ML5, bool& terminar);
 
-//-------------------------------------------------------------
 int main(int argc, char* argv[]) {
-    if(argc < 2) {
+    if (argc < 2) {
 	    cerr << "Ejecutar como: serverLinda2 <PUERTO> \n";
 	    return 1;
 	}
@@ -76,11 +78,11 @@ int main(int argc, char* argv[]) {
 	thread cliente[MAX_CONNECT];
 	int clientesActuales=0;
 	bool terminar = false;
-	while(clientesActuales<MAX_CONNECT && !terminar) {
+	while (clientesActuales<MAX_CONNECT && !terminar) {
 		// Accept
 		client_fd[clientesActuales] = socket.Accept();
 
-		if(client_fd[clientesActuales] == -1) {
+		if (client_fd[clientesActuales] == -1) {
 			string mensError(strerror(errno));
     		cerr << "Error: fallo en el Accept(): " + mensError + "\n";
 			// Cerramos el socket
@@ -97,7 +99,8 @@ int main(int argc, char* argv[]) {
 
 	for (int i = 0; i < clientesActuales; i++) {
 		cliente[i].join();
-	}	
+	}
+    cout << "Cerrando servidor Linda n2\n";
     // Cerramos el socket del servidor
     error_code = socket.Close(socket_fd);
     if (error_code == -1) {
@@ -108,17 +111,15 @@ int main(int argc, char* argv[]) {
     return error_code;
 }
 
-//-------------------------------------------------------------
-// Permite gestionar mediante threads a clientes que deseen usar espacios de tuplas de tamaños 4-5 del servicio Linda
 void servCliente(Socket& soc, int client_fd, MonitorLinda& ML4, MonitorLinda& ML5, bool& terminar) {
-	char MENS_FIN[]="END_OF_SERVICE";
-	char MENS_CIERRE[]="CLOSE_SERVER";
-    char MENS_INFO[]="DATA_REQUIRED";
+	char MENS_FIN[]	   ="END_OF_SERVICE";
+	char MENS_CIERRE[] ="CLOSE_SERVER";
+    char MENS_INFO[]   ="DATA_REQUIRED";
 	// Buffer para recibir el mensaje
 	int length = 100;
 	char buffer[length];
-	bool out = false; // Inicialmente no salir del bucle
-	while(!out) {
+	bool out = false;	// Inicialmente no salir del bucle
+	while (!out) {
 		// Recibimos el mensaje del cliente
 		int rcv_bytes = soc.Recv(client_fd,buffer,length);
 		if (rcv_bytes <= 0) {
@@ -134,6 +135,7 @@ void servCliente(Socket& soc, int client_fd, MonitorLinda& ML4, MonitorLinda& ML
 			out = true; // Salir del bucle
 		} else if(0 == strcmp(buffer, MENS_CIERRE)) { // Si recibimos "CLOSE_SERVER"
 			terminar=true;
+    		cout << "Cerrando servidor Linda2"<< endl;
 			out = true; // Salir del bucle
 		} else {
 			string message;
@@ -254,6 +256,8 @@ void servCliente(Socket& soc, int client_fd, MonitorLinda& ML4, MonitorLinda& ML
 							exit(1);
 					}
 					message = r1.to_string() + ":" + r2.to_string() + ":";
+				}else {
+					message = "UNKNOWN_PETITION";
 				}
 			}
 			// Si es Postnote se envia OK
@@ -274,4 +278,3 @@ void servCliente(Socket& soc, int client_fd, MonitorLinda& ML4, MonitorLinda& ML
 	cout << "Cliente desconectado del server2" << endl;
 	soc.Close(client_fd);
 }
-//-------------------------------------------------------------

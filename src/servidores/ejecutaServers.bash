@@ -1,1 +1,1 @@
-./serverLinda1 2120 & ./serverLinda2 2121 & ./serverLinda3 2122 &
+./serverLinda1 2120 & ./serverLinda2 2121 & ./serverLinda3 2122 & ./despliegue 2123 &

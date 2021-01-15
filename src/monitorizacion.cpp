@@ -1,9 +1,11 @@
 //********************************************************************************************
 // File:   monitorizacion.cpp
-// Author: Pablo Bueno, Santiago Illa, Luis Palazón, Carlos Paesa, Javier Pardos y Héctor Toral
+// Author: Pablo Bueno, Santiago Illa, Luis Palaz�n, Carlos Paesa, Javier Pardos y H�ctor Toral
 // Date:   enero 2021
-// Coms:   Fichero de implementación de un programa de monitorización de los servidores de 
+// Coms:   Fichero de implementaci�n de un programa de monitorizaci�n de los servidores de 
 //         tuplas que integran el sistema Linda
+//         Ejecutar con ./monitorizacion <IP_DESPLIEGUE> <PORT_DESPLIEGUE>
+//         Para terminar su ejecuci�n, escribir por entrada est�ndar el car�cter "q"
 //********************************************************************************************
 #include <iostream>
 #include <fstream>
@@ -14,14 +16,13 @@
 #include <iomanip> // put_time
 #include <string>  // string
 
-#include "../librerias/Socket/Socket.hpp"
+#include "librerias/Socket/Socket.hpp"
 
 using namespace std;
 
-const int PERIODO = 20;
+const int PERIODO = 10;
 const int LENGTH = 500;             // Longitud de los mensajes
-const int MAX_ATTEMPS    = 10;      // Máximo número de intento de conexiones
-
+const int MAX_ATTEMPS = 10;      // Máximo número de intento de conexiones
 
 // Pre:  Tiene creado un socket con la direccion del servidor despliegue
 // Post: buffer guarda las direcciones de los servidores linda
@@ -31,7 +32,7 @@ void tryDespligue(Socket& chan, char* buffer, int& error_code);
 // Post: Se conecta al servidor linda correspondiente y crea un log nuevo cada PERIODO segundos
 // Coms: Si error_code == -1 se cierran todos los canales de mensajes y se avisa por pantalla
 //       de cual de todos los servidores ha fallado
-void launchMonitor(char* IP_ADDRESS, int PORT_ADDRESS, int& error_code, const int ID);
+void launchMonitor(char* IP_ADDRESS, int PORT_ADDRESS, int& error_code, const int ID, bool& fin);
 
 // Pre:  True
 // Post: Envía un mensaje mediante un socket([IP][POST])
@@ -52,62 +53,76 @@ void analysis(Socket& chan, const int monitor_fd, int& error_code, const int ID)
 void escribirLog(const int numTuplas, const int lectPend, const int lectTotal, const int borradas, const int escTotal, const int t);
 
 int main(int numArg, char* args[]) {
-    if (numArg == 3) {
-        int error_code;
+    int error_code = 0;
+    SetConsoleOutputCP(65001);  // Fuerza la codificacion de salida en UTF-8
+
+    if (numArg < 3) {           // Falta de parámetros
+        cerr << "ERROR: Faltan parámetros.\n"    + "       ./Cliente <IP> <PORT>\n";
+        error_code = -2;
+    } else if (numArg > 3) {    // Exceso de parámetros
+        cerr << "ERROR: Exceso de parámetros.\n" + "       ./Cliente <IP> <PORT>\n";
+        error_code = 2;
+    } else {
         // Datos para comunicación con Despliegue
-        string DESPLIEGUE_ADDRESS = args[1];            // IP   servidor despliegue
-        int    DESPLIEGUE_PORT    = atoi(args[2]);      // PORT servidor despliegue
-        Socket chan(DESPLIEGUE_ADDRESS, DESPLIEGUE_PORT);   // Creación del Socket que lleva la comunicación con el servidor.
+        string DESPLIEGUE_ADDRESS = args[1];    // IP   servidor despliegue
+        int DESPLIEGUE_PORT = atoi(args[2]);    // PORT servidor despliegue
+        Socket chan(DESPLIEGUE_ADDRESS, DESPLIEGUE_PORT);   // Creación del Socket que lleva la comunicaci�n con el servidor.
         char buffer[LENGTH];
         tryDespligue(chan, buffer,error_code);
 
         if (error_code == -1) {
             cerr << "1- Error al obtener las [IP][PORT] del servidor despliegue.\n";
             cerr << "2- Error cerrando el socket del servidor despliegue.\n";
-            return -1;
+            error_code = -1;
         } else {
             thread cliente[3];
-
+            cliente[0] = thread(&launchMonitor, servidor, puerto, ref(error_code), 1, ref(fin));
             char* servidor = strtok (buffer,":");
-            int puerto = atoi(strtok (NULL,":"));
-            cliente[0] = thread(&launchMonitor, servidor, puerto, ref(error_code), 1);
+            int puerto     = atoi(strtok (NULL,":"));
+            bool fin = false;
+
             cout << "Nuevo monitor 1 creado\n";
             for (int i = 1; i < 3; i++) {
-                servidor = strtok (NULL,":");
-                puerto = atoi(strtok (NULL,":"));
-                cliente[i] = thread(&launchMonitor, servidor, puerto, ref(error_code), i+1);
-                cout << "Nuevo monitor " + to_string(i+1) + " creado\n";
-
+                servidor   = strtok (NULL,":");
+                puerto     = atoi(strtok (NULL,":"));
+                cliente[i] = thread(&launchMonitor, servidor, puerto, ref(error_code), i+1, ref(fin));
+                cout << "Nuevo monitor " + to_string(i+1) + " creado.\n";
             }
-            // Wait a los threads
+
+            char entrada;
+            cin >> entrada;
+            while(entrada != 'q') {
+                cin >> entrada;
+            }
+            fin = true;
+
+            // Espera la finalización de los procesos
             for (int id = 0; id < 3; id++) {
                 cliente[id].join();
             }
             cout << "Monitorización terminada\n";
-            return error_code;
         }
-    } else {
-        cerr << "ERROR -> Falta de parametros en la ejecución\n";
-        cerr << "\t-- Prueba a ejecutarlo asi: ./monitorizacion <server_IP> <server_PORT>\n";
-        return -2;
     }
+
+    return error_code;
 }
 
 void tryDespligue(Socket& chan, char* buffer, int& error_code) {
     int socket_fd;
-    int count = 0;
-    char END[]  = "END_OF_SERVICE";
+    int count  = 0;
+    char END[] = "END_OF_SERVICE";
     do {
         // Conexión con el servidor despliegue
         socket_fd = chan.Connect();
         count++;
 
-        // Si error --> esperamos 1 segundo para reconectar
+        // Si hay error --> esperamos 1 segundo para reconectar
         if(socket_fd == -1) {
             this_thread::sleep_for(chrono::seconds(1));
         }
     } while(socket_fd == -1 && count < MAX_ATTEMPS);
-
+    error_code = socket_fd;
+    
     // Chequeamos si se ha realizado la conexión
     if (socket_fd != -1) {
         // Recibir direcciones de los servidores linda
@@ -115,6 +130,7 @@ void tryDespligue(Socket& chan, char* buffer, int& error_code) {
 
         // Fin de la comunicación con servidor despliegue
         int send_bytes = chan.Send(socket_fd, END);	// Envíamos el string
+        
         if(send_bytes == -1){
             cerr << "Error cerrar socket_fd despliegue: " << strerror(errno) << endl;
             // Cerramos el socket
@@ -125,18 +141,18 @@ void tryDespligue(Socket& chan, char* buffer, int& error_code) {
     }
 }
 
-void launchMonitor(char* IP_ADDRESS, int PORT_ADDRESS, int& error_code, const int ID) {
+void launchMonitor(char* IP_ADDRESS, int PORT_ADDRESS, int& error_code, const int ID, bool& fin) {
     Socket soc(IP_ADDRESS, PORT_ADDRESS);
     int monitor_fd;
-    int count = 0;
-    char END[]  = "END_OF_SERVICE";
+    int count  = 0;
+    char END[] = "END_OF_SERVICE";
     do {
-        cout << "Intento conectarme..."<< endl;
+        cout << "Intento conectarme..." << endl;
         // Conexión con el servidor despliegue
         monitor_fd = soc.Connect();
         count++;
         // Si error --> esperamos 1 segundo para reconectar
-        if(monitor_fd == -1) {
+        if (monitor_fd == -1) {
             this_thread::sleep_for(chrono::seconds(1));
         }
     } while(monitor_fd == -1 && count < MAX_ATTEMPS);
@@ -144,12 +160,12 @@ void launchMonitor(char* IP_ADDRESS, int PORT_ADDRESS, int& error_code, const in
     this_thread::sleep_for(chrono::seconds(ID));
     // Chequeamos si se ha realizado la conexión
     if(monitor_fd != -1) {
-        int i =0;
+        int i = 0;
         do {
             analysis(soc, monitor_fd, error_code, ID);
-            this_thread::sleep_for(chrono::seconds(PERIODO));    // Hace un LOG cada X segundos
+            this_thread::sleep_for(chrono::seconds(PERIODO));   // Hace un LOG cada X segundos
             i++;
-        } while (error_code != -1 && i < 20);
+        } while (error_code != -1 && !fin);
 
         enviarMSG(soc, monitor_fd, END, error_code);
         error_code = soc.Close(monitor_fd); // Cerramos el socket del servidor
@@ -158,7 +174,6 @@ void launchMonitor(char* IP_ADDRESS, int PORT_ADDRESS, int& error_code, const in
         }
     }
 }
-
 
 void enviarMSG(Socket& soc, const int client_fd, const char* mensaje, int& error_code) {
     int send_bytes = soc.Send(client_fd, mensaje);
@@ -184,32 +199,30 @@ void recibirMSG(Socket& soc, const int client_fd, char* buffer, int& error_code)
 
 void analysis(Socket& soc, const int monitor_fd, int& error_code, const int ID) {
     char data[LENGTH];
-    char DATA[] = "DATA_REQUIRED";
+    char DATA[]   = "DATA_REQUIRED";
     int numTuplas = 0;
-    int lectPend = 0;
+    int lectPend  = 0;
     int lectTotal = 0;
-    int escTotal = 0;
-    int borradas = 0;
+    int escTotal  = 0;
+    int borradas  = 0;
     
     // Pedir datos
     enviarMSG(soc, monitor_fd, DATA, error_code);
     // Recibir datos
     recibirMSG(soc, monitor_fd, data, error_code);   // data = "numTuplas,lectPend,lectTotal,borradas,escTotal
+
     int t = 1;
-    if(ID==2){
-        t=4;
-    }
-    else if(ID==3) {
-        t=6;
-    }
+    if (ID == 2)      t = 4;
+    else if (ID == 3) t = 6;
+
     char* info;
     info = strtok(data,":");
     sscanf(info,"%d,%d,%d,%d,%d", &numTuplas, &lectPend, &lectTotal, &borradas, &escTotal);
     escribirLog(numTuplas, lectPend, lectTotal, borradas, escTotal, t);
-    for (int i=ID+1; i<=3; i++) {
+    for (int i = ID + 1; i <= 3; i++) {
         t++;
-        info=strtok(NULL,":");
-        sscanf(info,"%d,%d,%d,%d,%d", &numTuplas, &lectPend, &lectTotal, &borradas, &escTotal);
+        info = strtok(NULL,":");
+        sscanf(info, "%d,%d,%d,%d,%d", &numTuplas, &lectPend, &lectTotal, &borradas, &escTotal);
         escribirLog(numTuplas, lectPend, lectTotal, borradas, escTotal, t);
     }
 }
@@ -220,13 +233,14 @@ void escribirLog(const int numTuplas, const int lectPend, const int lectTotal, c
 
     stringstream ss;
     ss << put_time(localtime(&in_time_t), "%d-%m-%Y at %T");
-    cout << "-------------------------------------" << endl
-         << "Date: "<< ss.str() << endl
+    cout << "-------------------------------------\n"
+         << "FECHA: "<< ss.str() << endl
          << "En el espacio de tumplas de tamaño " << t << ":" << endl
-         << "\tNum tuplas: "    << numTuplas << endl
-         << "\tNum Lectura: "   << endl
-         << "\t\tTotal:      "  << lectTotal << endl
-         << "\t\tBorradas:      "  << borradas << endl
-         << "\t\tPendientes: "  << lectPend << endl
-         << "\tNum Escritura: " << escTotal << endl;
+         << "\tNum tuplas: "     << setw(11) << numTuplas     << endl
+         << "\tNum Lectura: "    << endl
+         << "\t\t+ Total:"       << setw(10) << lectTotal     << endl
+         << "\t\t+ Borradas: "   << setw(7)  << borradas      << endl
+         << "\t\t+ Pendientes: " << setw(5)  << lectPend      << endl
+         << "\tNum Escritura: "  << endl
+         << "\t\t+ Total:"       << setw(10) << escTotal      << endl;
 }

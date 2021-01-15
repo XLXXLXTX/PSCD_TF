@@ -1,29 +1,29 @@
-CC = g++
+CC=g++
 
-MONITOR_DIR	= ../librerias/MonitorLinda
-MONITOR		= ${MONITOR_DIR}/MonitorLinda
+MONITOR_DIR=../librerias/MonitorLinda
+MONITOR=${MONITOR_DIR}/MonitorLinda
 
-DESPLIEGUE	= despliegue
-ANALISIS	= monitorizacion
-KILLER		= finalizador
+DESPLIEGUE=despliegue
+ANALISIS=monitorizacion
+KILLER=finalizador
 
-SERVER1 = serverLinda1
-SERVER2 = serverLinda2
-SERVER3 = serverLinda3
+SERVER1=serverLinda1
+SERVER2=serverLinda2
+SERVER3=serverLinda3
 
-TUPLAS_DIR = ../librerias/Tupla
-TUPLAS	   = ${TUPLAS_DIR}/Tupla
-SOCKET_DIR = ../librerias/Socket
-SOCKET	   = ${SOCKET_DIR}/Socket
+TUPLAS_DIR=../librerias/Tupla
+TUPLAS=${TUPLAS_DIR}/Tupla
+SOCKET_DIR=../librerias/Socket
+SOCKET=${SOCKET_DIR}/Socket
 
-CPPFLAGS   = -I. -O2 -std=c++11 -lsockets -Wall# Flags compilacion
-LDFLAGS	   = -pthread # Flags linkado threads
+CPPFLAGS=-I. -O2 -std=c++11 -lsockets -Wall# Flags compilacion
+LDFLAGS=-pthread # Flags linkado threads
 
 all: ${SERVER1} ${SERVER2} ${SERVER3} ${DESPLIEGUE} ${KILLER}
 #----------------------------------------------------------------------------
 #Para gestionar opciones de compilación según la máquina: hendrix tiene sus manías
 #Descomentar la siguiente línea para compilar en hendrix
-SOCKETSFLAGS = -lsocket -lnsl
+SOCKETSFLAGS=-lsocket -lnsl
 #-----------------------------------------------------------
 # MONITOR
 # Compilacion

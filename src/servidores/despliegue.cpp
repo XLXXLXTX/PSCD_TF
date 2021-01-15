@@ -4,13 +4,14 @@
 // Date:   enero 2021
 // Coms:   Fichero de implementación de un servidor de despliegue que comunica a otros 
 //         procesos la localización de los servidores que integran el sistema Linda
-//***********************************************************cd *********************************
+//********************************************************************************************
+
 #include <iostream>
+#include <fstream>
 #include <thread>
 #include <unistd.h>
 #include <stdlib.h>
-#include <fstream>
-#include "../../librerias/Socket/Socket.hpp"
+#include "../librerias/Socket/Socket.hpp"
 
 using namespace std;
 
@@ -18,20 +19,20 @@ const char FICHERO[] = "servidoresLinda.txt";
 const int MAX_CONNECT = 100;
 
 //-------------------------------------------------------------
-// Pre: el socket tiene abierta ya la conexion mediante client_fd
-//      message contiene la localización de los servidores Linda
+// Pre:  el socket tiene abierta ya la conexion mediante client_fd
+//       message contiene la localización de los servidores Linda
 // Post: comunica por el socket la localización de los servidores Linda
 //       Termina al recibir MENS_FIN o MENS_CIERRE (en el caso segundo bloquea nuevas 
 //       conexiones al servidor de despliegue)
 void servCliente(Socket& soc, int client_fd, string& message, bool& terminar) {
 	int length = 100;
 	char buffer[length];
-    char MENS_FIN[]="END_OF_SERVICE";
-    char MENS_CIERRE[]="CLOSE_SERVER";
+    char MENS_FIN[] =    "END_OF_SERVICE";
+    char MENS_CIERRE[] = "CLOSE_SERVER";
     bool out = false;
-    while(!out) {
+    while (!out) {
         int send_bytes = soc.Send(client_fd, message);
-        if(send_bytes == -1) {
+        if (send_bytes == -1) {
             string mensError(strerror(errno));
             cerr << "Error: fallo al enviar mensaje en despliegue: " + mensError + "\n";
             // Cerramos los sockets
@@ -46,16 +47,16 @@ void servCliente(Socket& soc, int client_fd, string& message, bool& terminar) {
             cerr << "Error: fallo al recibir mensaje en despliegue: " + mensError + "\n";
         }
 
-        if(0 == strcmp(buffer, MENS_CIERRE)) { // Si recibimos "CLOSE_SERVER"
+        if (0 == strcmp(buffer, MENS_CIERRE)) { // Si recibimos "CLOSE_SERVER"
 			terminar=true;
-            out=true;
-		} else if(0 == strcmp(buffer,MENS_FIN)) { // Si recibimos "END_OF_SERVICE"
-            out=true;
+            out = true;
+		} else if (0 == strcmp(buffer,MENS_FIN)) { // Si recibimos "END_OF_SERVICE"
+            out = true;
         }
     }
 
 	// Cerramos cliente
-	cout << "Cliente desconectado del despliegue" << endl;
+	cout << "Cliente desconectado del despliegue\n";
 	soc.Close(client_fd);
 }
 //-------------------------------------------------------------
@@ -66,7 +67,7 @@ int main(int argc, char* argv[]) {
     // Creación del socket con el que se llevará a cabo
     // la comunicación con el servidor.
     Socket chan(SERVER_PORT);
-
+    cout << "Abriendo servidor de despliegue en el puerto " + to_string(SERVER_PORT) + "\n";
     // Bind
     int socket_fd = chan.Bind();
     if (socket_fd == -1) {
@@ -84,7 +85,7 @@ int main(int argc, char* argv[]) {
     }
 
     thread cliente[MAX_CONNECT];
-    int client_fd[MAX_CONNECT];
+    int  client_fd[MAX_CONNECT];
     ifstream f(FICHERO);
     // El fichero contiene tres líneas, cada una con una dirección y un puerto separadas por ":"
     // correspondientes al primer, segundo y tercer servidor que integran el sistema Linda. Ejemplo de formato:
@@ -104,7 +105,7 @@ int main(int argc, char* argv[]) {
 	
         int clientesActuales=0;
         bool terminar = false;
-        while(clientesActuales<MAX_CONNECT && !terminar) {
+        while (clientesActuales<MAX_CONNECT && !terminar) {
             // Accept
             client_fd[clientesActuales] = chan.Accept();
 
@@ -121,10 +122,10 @@ int main(int argc, char* argv[]) {
             clientesActuales++;
         }
 
-        for (int i=0; i<clientesActuales; i++) {
+        for (int i = 0; i < clientesActuales; i++) {
             cliente[i].join();
         }
-
+        cout << "Cerrando servidor de despliegue\n";
         // Cerramos el socket del servidor
         error_code = chan.Close(socket_fd);
         if (error_code == -1) {

@@ -12,8 +12,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "../../librerias/Socket/Socket.hpp"
-#include "../../librerias/MonitorLinda/MonitorLinda.hpp"
+#include "../librerias/Socket/Socket.hpp"
+#include "../librerias/MonitorLinda/MonitorLinda.hpp"
 
 using namespace std;
 
@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
 			exit(1);
 		}
 
-		cout << "Nuevo cliente en server2: " + to_string(clientesActuales) + "\n";
+		cout << "Nuevo cliente en server3: " + to_string(clientesActuales) + "\n";
 		// Thread para tratar al cliente
         cliente[clientesActuales]=thread(&servCliente, ref(socket), client_fd[clientesActuales], ref(ML6), ref(terminar));
 		clientesActuales++;
@@ -97,6 +97,7 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < clientesActuales; i++) {
 		cliente[i].join();
 	}	
+    cout << "Cerrando servidor Linda n3"<< endl;
     // Cerramos el socket del servidor
     error_code = socket.Close(socket_fd);
     if (error_code == -1) {
@@ -133,6 +134,7 @@ void servCliente(Socket& soc, int client_fd, MonitorLinda& ML6, bool& terminar) 
 			out = true; // Salir del bucle
 		} else if(0 == strcmp(buffer, MENS_CIERRE)) { // Si recibimos "CLOSE_SERVER"
 			terminar=true;
+    cout << "Cerrando servidor Linda3"<< endl;
 			out = true; // Salir del bucle
 		} else {
 			string message;
@@ -200,6 +202,8 @@ void servCliente(Socket& soc, int client_fd, MonitorLinda& ML6, bool& terminar) 
 					// Ejecución de la operación del monitor
 					ML6.RN_2(t,t2,r1,r2);
 					message = r1.to_string() + ":" + r2.to_string() + ":";
+				}else {
+					message = "UNKNOWN_PETITION";
 				}
 			}
 			// Si es Postnote se envia OK

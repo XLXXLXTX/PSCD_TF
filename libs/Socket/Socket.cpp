@@ -22,9 +22,9 @@
 
 using namespace std;
 
-//-------------------------------------------------------------
+
 const int ACK_BUFFER_SIZE = 4; //para hacer la comunición síncrona
-//-------------------------------------------------------------
+
 // Constructor de la clase indicando la dirección
 // y el puerto de escucha del servidor. Para clientes.
 Socket::Socket(string address, int port) {
@@ -33,7 +33,7 @@ Socket::Socket(string address, int port) {
     SERVER_ADDRESS = address;
     SERVER_PORT    = port;
 }
-//-------------------------------------------------------------
+
 // Constructor de la clase indicando solo el puerto de
 // escucha del servidor. Para servidores.
 Socket::Socket(int port) {
@@ -42,21 +42,19 @@ Socket::Socket(int port) {
     SERVER_ADDRESS = "localhost";
     SERVER_PORT    = port;
 }
-//-------------------------------------------------------------
-int Socket::Accept() {
 
-    struct sockaddr_in client;  // Información dirección scliente
-    socklen_t sin_size=sizeof(struct sockaddr_in);
+int Socket::Accept() {
+    struct sockaddr_in client;  // Información dirección cliente
+    socklen_t sin_size = sizeof(struct sockaddr_in);
     int fd = accept(socket_fd,(struct sockaddr *) &client, &sin_size);
 
-    if(fd==-1) {
+    if (fd == -1) {
         cerr << "Error en accept\n";
     }
     return fd;
 }
-//-------------------------------------------------------------.
+.
 int Socket::Bind() {
-
     // Creación del socket y almacenamiento del descriptor del socket (Servidor)
     // AF_INET     --> IPv4
     // SOCK_STREAM --> Comunicación TCP
@@ -65,76 +63,66 @@ int Socket::Bind() {
     // Información de la dirección del servidor
     struct sockaddr_in server;
 
-    server.sin_family = AF_INET; // IPv4
+    server.sin_family = AF_INET;         // IPv4
     server.sin_port = htons(SERVER_PORT);
     server.sin_addr.s_addr = INADDR_ANY; // INADDR_ANY coloca nuestra dirección IP automáticamente
-    bzero(&(server.sin_zero),8); // 0 en el resto de la estructura
+    bzero(&(server.sin_zero),8);         // 0 en el resto de la estructura
 
     // Llamada a bind
     int exito = bind(socket_fd, (struct sockaddr *) &server, sizeof(struct sockaddr_in));
 
-    if(exito == -1) {
-        return -1;
-    } else {
-        return socket_fd;
-    }
+    if (exito == -1) return -1;
+    return socket_fd;
 }
-//-------------------------------------------------------------
-int Socket::Close(int fd) {
 
+int Socket::Close(int fd) {
     int exito = close(fd);
 
-    if(exito != 0) {
-        return -1;
-    }
-
+    if(exito != 0) return -1;
     return exito;
 }
-//-------------------------------------------------------------
-int Socket::Connect() {
 
+int Socket::Connect() {
     // Creación del socket y almacenamiento del descriptor del socket (Cliente)
     // AF_INET     --> IPv4
     // SOCK_STREAM --> Comunicación TCP
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-    struct hostent *he; // Información del nodo remoto
+    struct hostent *he;         // Información del nodo remoto
     struct sockaddr_in server;  // Información dirección servidor
 
     // Obtenemos la dirección del servidor
     he = gethostbyname(SERVER_ADDRESS.c_str());
-    if (he==NULL) {
+    if (he == NULL) {
         cerr << "Error obteniendo la dirección del servidor\n";
         return -1;
     }
 
     // Guardamos la información del servidor
-    server.sin_family = AF_INET;	// IPv4
-    server.sin_port = htons(SERVER_PORT); // Codificación por red
-    server.sin_addr = *((struct in_addr *)he->h_addr); // Info del servidor
-    bzero(&(server.sin_zero),8); // Rellenamos con ceros
+    server.sin_family = AF_INET;            // IPv4
+    server.sin_port   = htons(SERVER_PORT);   // Codificación por red
+    server.sin_addr   = *((struct in_addr *)he->h_addr); // Info del servidor
+    bzero(&(server.sin_zero),8);            // Rellenamos con ceros
 
     // Establecemos la conexion con el servidor
     int exito = connect(socket_fd, (struct sockaddr *)&server, sizeof(struct sockaddr));
-    if(exito==-1) {
+    if (exito == -1) {
         cerr << "Error conectando con el servidor " + SERVER_ADDRESS + ": " + to_string(SERVER_PORT) + "\n";
         return -1;
     } else {
         return socket_fd;
     }
 }
-//-------------------------------------------------------------
-int Socket::Listen(int max_conexions_espera) {
 
+int Socket::Listen(int max_conexions_espera) {
     // Llamamos a listen
     int exito = listen(socket_fd, max_conexions_espera);
 
     return exito;
 }
-//-------------------------------------------------------------
-int Socket::Recv(int fd, char* buffer, int buffer_length) {
 
-    // PRIMERO: RECIBIMOS INFORMACION
+int Socket::Recv(int fd, char* buffer, int buffer_length) {
+    // PRIMERO: RECIBIMOS INFORMACIÓN
     // Limpiamos el buffer
     bzero(buffer, buffer_length);
 
@@ -146,7 +134,6 @@ int Socket::Recv(int fd, char* buffer, int buffer_length) {
     }
 
     // SEGUNDO: ENVIAMOS ACK
-
     char ack[ACK_BUFFER_SIZE];
 
     bzero(ack, ACK_BUFFER_SIZE);
@@ -157,7 +144,7 @@ int Socket::Recv(int fd, char* buffer, int buffer_length) {
     // Devolvemos número de bytes leídos
     return num_bytes;
 }
-//-------------------------------------------------------------
+
 int Socket::Recv(int fd, string &buffer, int buffer_length) {
     buffer = ""; //vaciar
     // PRIMERO: RECIBIMOS INFORMACION
@@ -175,7 +162,7 @@ int Socket::Recv(int fd, string &buffer, int buffer_length) {
     // Devolvemos número de bytes leídos
     return num_bytes;
 }
-//-------------------------------------------------------------
+
 ssize_t Socket::Send(int fd, const char* message) {
 
     // PRIMERO ENVIAMOS INFORMACION
@@ -197,10 +184,8 @@ ssize_t Socket::Send(int fd, const char* message) {
 
     return num_bytes;
 }
-//-------------------------------------------------------------
+
 ssize_t Socket::Send(int fd, const string message) {
-
     ssize_t num_bytes = Send(fd, message.c_str());
-
     return num_bytes;
 }
