@@ -120,4 +120,4 @@ Una posible despligue del sistema sería:
 
 | Pablo Bueno |  Carlos Paesa
 | Santiago Illa | Javier Pardos
-|  Luis Palazón |  @Hec7orci7o
+|  Luis Palazón | Héctor Toral
