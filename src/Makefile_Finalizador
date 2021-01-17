@@ -1,0 +1,44 @@
+#--------------------------------------------------------------------------------------------
+# Authors: Pablo Bueno,  Santiago Illa, Luis Palazón,
+#          Carlos Paesa, Javier Pardos, Héctor Toral
+# Date:    Enero 2021
+# Coms:    Compila y crea los ejecutables del fichero: Finalizador.cpp
+# File:    Makefile_Finalizador
+# Encode:  UTF-8
+# EOF:     LF
+# Commands:
+#	 - make:  make -f Makefile_Finalizador
+#	 - clean: make -f Makefile_Finalizador clean
+#--------------------------------------------------------------------------------------------
+
+CC       	 = g++
+CPPFLAGS 	 = -I. -O2 -std=c++11 -lsockets -Wall # Flags compilacion
+LDFLAGS  	 = -pthread 						  # Flags linkado threads
+# SOCKETSFLAGS = -lsocket -lnsl					  # Para compilar en Hendrix
+
+SOCKET_DIR = ../libs/Socket
+SOCKET     = ${SOCKET_DIR}/Socket
+KILLER     = Finalizador
+
+all: ${KILLER}
+#===========================================================
+# LINKADO...
+
+# KILLER
+${KILLER}:			   ${SOCKET}.o ${KILLER}.o  
+	${CC}  ${LDFLAGS}  ${SOCKET}.o ${KILLER}.o -o ${KILLER} ${SOCKETSFLAGS}
+#===========================================================
+# COMPILADO...
+
+# KILLER: 
+${KILLER}.o: 			 ${KILLER}.cpp
+	${CC} -c ${CPPFLAGS} ${KILLER}.cpp
+#-----------------------------------------------------------
+# SOCKETS
+${SOCKET}.o: ${SOCKET}.hpp ${SOCKET}.cpp
+	${CC} -c ${CPPFLAGS}   ${SOCKET}.cpp -o ${SOCKET}.o
+#===========================================================	
+# LIMPIEZA
+clean:
+	$(RM) ${SOCKET}.o
+	$(RM) ${KILLER} ${KILLER}.o

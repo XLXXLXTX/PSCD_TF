@@ -1,0 +1,44 @@
+#--------------------------------------------------------------------------------------------
+# Authors: Pablo Bueno,  Santiago Illa, Luis Palazón,
+#          Carlos Paesa, Javier Pardos, Héctor Toral
+# Date:    Enero 2021
+# Coms:    Compila y crea los ejecutables del fichero: Monitorizacion.cpp
+# File:    Makefile_Monitorizacion
+# Encode:  UTF-8
+# EOF:     LF
+# Commands:
+#	 - make:  make -f Makefile_Monitorizacion
+#	 - clean: make -f Makefile_Monitorizacion clean
+#--------------------------------------------------------------------------------------------
+
+CC       	 = g++
+CPPFLAGS 	 = -I. -O2 -std=c++11 -lsockets -Wall # Flags compilacion
+LDFLAGS  	 = -pthread 						  # Flags linkado threads
+SOCKETSFLAGS = -lsocket -lnsl					  # Para compilar en Hendrix
+
+SOCKET_DIR = ../libs/Socket
+SOCKET	   = ${SOCKET_DIR}/Socket
+ANALISIS   = Monitorizacion
+
+all: ${ANALISIS}
+#===========================================================
+# LINKADO...
+
+# MONITORIZACION
+${ANALISIS}: 			 ${SOCKET}.o ${ANALISIS}.o  
+	${CC} ${LDFLAGS}     ${SOCKET}.o ${ANALISIS}.o -o ${ANALISIS} ${SOCKETSFLAGS}
+#===========================================================
+# COMPILADO...
+
+# MONITORIZACION
+${ANALISIS}.o: 			 ${ANALISIS}.cpp
+	${CC} -c ${CPPFLAGS} ${ANALISIS}.cpp
+#-----------------------------------------------------------
+# SOCKETS
+${SOCKET}.o: 			 ${SOCKET}.hpp ${SOCKET}.cpp
+	${CC} -c ${CPPFLAGS} ${SOCKET}.cpp -o ${SOCKET}.o
+#===========================================================	
+# LIMPIEZA
+clean:
+	$(RM) ${SOCKET}.o
+	$(RM) ${ANALISIS} ${ANALISIS}.o
