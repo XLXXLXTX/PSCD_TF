@@ -5,7 +5,8 @@ mediate un sistema linda.
 #### Clientes
 ------------
 - **Publicadores:** Publican las ofertas que los lectores tendrán que leer cada X tiempo, las ofertas, tendrán el siguiente formato:
-                [ID,ORIGEN,DESTINO,PRECIO]
+                
+		[ID,ORIGEN,DESTINO,PRECIO]
 
 - **Buscadores:** Dentro de estos distinguimos entre dos tipos:
 	- Simples: Buscan una oferta tupla mediante el siguiente patrón:
