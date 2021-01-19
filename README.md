@@ -45,7 +45,7 @@ Una posible despligue del sistema sería:
 - **PILGOR:**
 
 		ADDRESS:	[pilgor.cps.unizar.es, 155.210.152.12]
-		PORTS:		 [32080] [32064] [32048]
+		PORTS:		 [32080] [32079] [32078]
 
 	Servicios lanzados: Servidor Linda1, Servidor Linda2, Servidor Linda3.
 
