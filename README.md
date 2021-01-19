@@ -50,8 +50,8 @@ Una posible despligue del sistema sería:
 	Servicios lanzados: Servidor Linda1, Servidor Linda2, Servidor Linda3.
 
 		Auto:		./runServers
-		Manual:	./ServidorLinda1 32080 & ServidorLinda2 32064 &
-							  ServidorLinda2 32048
+		Manual:	./ServidorLinda1 32080 & ServidorLinda2 32079 &
+							  ServidorLinda2 32078
 - **HENDRIX:**
 
 		ADDRESS:	[hendrix01.cps.unizar.es, 155.210.152.183]
